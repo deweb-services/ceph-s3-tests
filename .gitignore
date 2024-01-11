@@ -13,3 +13,5 @@
 /venv
 
 config.yaml
+.tox
+my.conf

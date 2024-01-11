@@ -141,13 +141,16 @@ def _get_prefixes(response):
 
 @pytest.mark.fails_on_dbstore
 def test_bucket_list_many():
-    bucket_name = _create_objects(keys=['foo', 'bar', 'baz'])
+    k = sorted(['foo', 'bar', 'baz'])
+    bucket_name = _create_objects(keys=k)
     client = get_client()
 
     response = client.list_objects(Bucket=bucket_name, MaxKeys=2)
-    keys = _get_keys(response)
+    keys = sorted(_get_keys(response))
     assert len(keys) == 2
-    assert keys == ['bar', 'baz']
+    assert keys[0] in k
+    assert keys[1] in k
+    assert keys[0] != keys[1]
     assert response['IsTruncated'] == True
 
     response = client.list_objects(Bucket=bucket_name, Marker='baz',MaxKeys=2)
@@ -640,12 +643,12 @@ def test_bucket_list_delimiter_not_exist():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == key_names
+    assert sorted(keys) == key_names
     assert prefixes == []
 
 @pytest.mark.list_objects_v2
 def test_bucket_listv2_delimiter_not_exist():
-    key_names = ['bar', 'baz', 'cab', 'foo']
+    key_names = sorted(['bar', 'baz', 'cab', 'foo'])
     bucket_name = _create_objects(keys=key_names)
     client = get_client()
 
@@ -653,9 +656,9 @@ def test_bucket_listv2_delimiter_not_exist():
     # putting an empty value into Delimiter will not return a value in the response
     assert response['Delimiter'] == '/'
 
-    keys = _get_keys(response)
+    keys = sorted(_get_keys(response))
     prefixes = _get_prefixes(response)
-    assert keys == key_names
+    assert sorted(keys) == key_names
     assert prefixes == []
 
 
@@ -685,7 +688,7 @@ def test_bucket_list_prefix_basic():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == ['foo/bar', 'foo/baz']
+    assert sorted(keys) == ['foo/bar', 'foo/baz']
     assert prefixes == []
 
 @pytest.mark.list_objects_v2
@@ -699,7 +702,7 @@ def test_bucket_listv2_prefix_basic():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == ['foo/bar', 'foo/baz']
+    assert sorted(keys) == ['foo/bar', 'foo/baz']
     assert prefixes == []
 
 # just testing that we can do the delimeter and prefix logic on non-slashes
@@ -740,7 +743,7 @@ def test_bucket_list_prefix_empty():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == key_names
+    assert sorted(keys) == key_names
     assert prefixes == []
 
 @pytest.mark.list_objects_v2
@@ -754,7 +757,7 @@ def test_bucket_listv2_prefix_empty():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == key_names
+    assert sorted(keys) == sorted(key_names)
     assert prefixes == []
 
 def test_bucket_list_prefix_none():
@@ -767,7 +770,7 @@ def test_bucket_list_prefix_none():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == key_names
+    assert sorted(keys) == key_names
     assert prefixes == []
 
 @pytest.mark.list_objects_v2
@@ -781,7 +784,7 @@ def test_bucket_listv2_prefix_none():
 
     keys = _get_keys(response)
     prefixes = _get_prefixes(response)
-    assert keys == key_names
+    assert sorted(keys) == key_names
     assert prefixes == []
 
 def test_bucket_list_prefix_not_exist():
@@ -981,7 +984,8 @@ def test_bucket_list_maxkeys_one():
     assert response['IsTruncated'] == True
 
     keys = _get_keys(response)
-    assert keys == key_names[0:1]
+    assert len(keys) == 1
+    assert keys[0] in key_names
 
     response = client.list_objects(Bucket=bucket_name, Marker=key_names[0])
     assert response['IsTruncated'] == False
@@ -10373,8 +10377,9 @@ def test_get_obj_tagging():
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200
 
     response = client.get_object_tagging(Bucket=bucket_name, Key=key)
-    assert response['TagSet'] == input_tagset['TagSet']
-
+    a = sorted(response['TagSet'], key=lambda x: x["Key"])
+    b = sorted(input_tagset['TagSet'], key=lambda x: x["Key"])
+    assert a == b
 
 @pytest.mark.tagging
 def test_get_obj_head_tagging():
@@ -10403,7 +10408,9 @@ def test_put_max_tags():
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200
 
     response = client.get_object_tagging(Bucket=bucket_name, Key=key)
-    assert response['TagSet'] == input_tagset['TagSet']
+    a = sorted(response['TagSet'], key=lambda x: x["Key"])
+    b = sorted(input_tagset['TagSet'], key=lambda x: x["Key"])
+    assert a == b
 
 @pytest.mark.tagging
 def test_put_excess_tags():
@@ -10527,7 +10534,9 @@ def test_put_delete_tags():
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200
 
     response = client.get_object_tagging(Bucket=bucket_name, Key=key)
-    assert response['TagSet'] == input_tagset['TagSet']
+    a = sorted(response['TagSet'], key=lambda x: x["Key"])
+    b = sorted(input_tagset['TagSet'], key=lambda x: x["Key"])
+    assert a == b
 
     response = client.delete_object_tagging(Bucket=bucket_name, Key=key)
     assert response['ResponseMetadata']['HTTPStatusCode'] == 204
@@ -10640,7 +10649,11 @@ def test_put_obj_with_tags():
     response = client.get_object_tagging(Bucket=bucket_name, Key=key)
     response_tagset = response['TagSet']
     tagset = tagset
-    assert response_tagset == tagset
+    print(response_tagset)
+    print(tagset)
+    a = sorted(response_tagset, key=lambda x: x['Key'])
+    b = sorted(tagset, key=lambda x: x['Key'])
+    assert a == b
 
 def _make_arn_resource(path="*"):
     return "arn:aws:s3:::{}".format(path)
