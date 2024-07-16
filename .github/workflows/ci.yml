@@ -21,8 +21,8 @@ on:
         required: true
 
 jobs:
-  build-docker-image:
-    runs-on: ubuntu-latest
+  run-tests:
+    runs-on: github-internal
 
     steps:
       - name: Checkout code
