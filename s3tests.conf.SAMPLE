@@ -33,10 +33,10 @@ email = tester@ceph.com
 api_name = default
 
 ## main AWS access key
-access_key = 0555b35654ad1656d804
+access_key = access_key
 
 ## main AWS secret key
-secret_key = h7GhxuBLTrlhVUyxSPUKUV8r/2EI4ngqJxD7iBdBYLhwluN30JaT3Q==
+secret_key = secret_key
 
 ## replace with key id obtained when secret is created, or delete if KMS not tested
 #kms_keyid = 01234567-89ab-cdef-0123-456789abcdef
@@ -57,10 +57,10 @@ email = john.doe@example.com
 user_id = 56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234
 
 # alt AWS access key set in vstart.sh
-access_key = NOPQRSTUVWXYZABCDEFG
+access_key = access_key
 
 # alt AWS secret key set in vstart.sh
-secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
+secret_key = secret_key
 
 #[s3 cloud]
 ## to run the testcases with "cloud_transition" attribute.
@@ -101,10 +101,10 @@ display_name = testx$tenanteduser
 user_id = 9876543210abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # tenant AWS secret key set in vstart.sh
-access_key = HIJKLMNOPQRSTUVWXYZA
+access_key = access_key
 
 # tenant AWS secret key set in vstart.sh
-secret_key = opqrstuvwxyzabcdefghijklmnopqrstuvwxyzab
+secret_key = secret_key
 
 # tenant email set in vstart.sh
 email = tenanteduser@example.com
@@ -119,10 +119,10 @@ email = s3@example.com
 user_id = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 #access_key from vstart.sh
-access_key = ABCDEFGHIJKLMNOPQRST
+access_key = access_key
 
 #secret_key vstart.sh
-secret_key = abcdefghijklmnopqrstuvwxyzabcdefghijklmn
+secret_key = secret_key
 
 #display_name from vstart.sh
 display_name = youruseridhere
