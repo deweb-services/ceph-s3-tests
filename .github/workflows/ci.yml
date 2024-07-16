@@ -1,0 +1,61 @@
+name: S3 Ceph Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      host:
+        type: string
+        description: s3 host
+        required: true
+      port:
+        type: string
+        description: s3 port
+        required: true
+      access_key:
+        type: string
+        description: s3 access key
+        required: true
+      secret_key:
+        type: string
+        description: s3 secret key
+        required: true
+
+jobs:
+  build-docker-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Mask S3 keys
+        run: |
+          ACCESS_KEY=$(jq -r '.inputs.access_key' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$ACCESS_KEY
+          echo ACCESS_KEY=$ACCESS_KEY >> $GITHUB_ENV
+          SECRET_KEY=$(jq -r '.inputs.secret_key' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$SECRET_KEY
+          echo SECRET_KEY=$SECRET_KEY >> $GITHUB_ENV
+
+      - name: Fetch Secrets
+        uses: bitwarden/sm-action@v1
+        with:
+          access_token: ${{ secrets.BW_PIPELINE_ACCESS_TOKEN }}
+          secrets: |
+            36f7899e-da1c-47a1-bfaa-b16300eee9f3 > REGISTRY_USER
+            55987f21-7148-48e2-b88c-b17f00791f98 > REGISTRY_PASSWORD
+
+      - uses: addnab/docker-run-action@v3
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          registry: ghcr.io
+          image: python:3.7
+          options: -v ${{ github.workspace }}:/work -w /work
+          run: |
+            cp s3tests.conf.SAMPLE my.conf
+            sed -i -e 's|access_key = access_key|access_key = ${{ env.ACCESS_KEY }}|g' -e 's|secret_key = secret_key|secret_key = ${{ env.SECRET_KEY }}|g' -e 's|host = localhost|host = ${{ inputs.host }}|g' -e 's|port = 8000|port = ${{ inputs.port }}|g' my.conf
+            
+            apt-get update && apt-get install -y tox
+            
+            S3TEST_CONF=my.conf tox

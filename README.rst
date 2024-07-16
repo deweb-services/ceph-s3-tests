@@ -100,3 +100,10 @@ You can filter tests based on their attributes::
 
 	S3TEST_CONF=your.conf tox -- s3tests_boto3/functional/test_iam.py -m 'not fails_on_rgw'
 
+# Run
+
+```shell
+    docker run --network=host -ti -v $(pwd):/repo -w /repo python:3.7 bash
+    apt-get update && apt-get install -y tox
+    S3TEST_CONF=your.conf tox
+```
